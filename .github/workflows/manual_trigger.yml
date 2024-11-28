@@ -1,0 +1,69 @@
+name: Force environment update
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to update"
+        required: true
+        type: string
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    environment: Gadi
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: access-nri/actions/.github/actions/setup-ssh@main
+        id: ssh
+        with:
+          hosts: |
+            ${{ secrets.HOST }}
+            ${{ secrets.HOST_DATA }}
+          private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Sync repository to Gadi
+        run: |
+          rsync -e 'ssh -i ${{ steps.ssh.outputs.private-key-path }}' \
+            -avz --delete --exclude=/.git/ --exclude=/.github/ \
+            ./ \
+            ${{ secrets.USER }}@${{ secrets.HOST_DATA }}:${{ secrets.REPO_PATH }}
+
+      - name: Create Admin dirs on Gadi
+        run: |
+          ssh ${{ secrets.USER }}@${{ secrets.HOST }} -i ${{ steps.ssh.outputs.private-key-path }} /bin/bash <<'EOT'
+          set -e
+          export ADMIN_DIR="${{ vars.ADMIN_DIR }}"
+          export CONDA_BASE="${{ vars.CONDA_BASE }}"
+          export APPS_USERS_GROUP="${{ vars.APPS_USERS_GROUP }}"
+          export APPS_OWNERS_GROUP="${{ vars.APPS_OWNERS_GROUP }}"
+
+          source "${{ secrets.REPO_PATH }}/scripts/install_config.sh"
+          source "${{ secrets.REPO_PATH }}/scripts/functions.sh"
+          mkdir -p "${ADMIN_DIR}" "${JOB_LOG_DIR}" "${BUILD_STAGE_DIR}"
+          set_admin_perms "${ADMIN_DIR}" "${JOB_LOG_DIR}" "${BUILD_STAGE_DIR}"
+
+          EOT
+
+  build:
+    needs: setup
+    uses: ./.github/workflows/build.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  deploy:
+    needs: test
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
