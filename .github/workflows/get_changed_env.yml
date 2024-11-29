@@ -38,4 +38,6 @@ jobs:
             fi
           done
           ### https://github.com/actions/runner/issues/2947
-          echo "matrix=$( echo "${json%,}]}" | jq -r 'tostring' )" >> $GITHUB_OUTPUT
+          matrix=$( echo "${json%,}]}" | jq -r 'tostring' )
+          echo "Changed environments matrix: ${matrix}"
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
