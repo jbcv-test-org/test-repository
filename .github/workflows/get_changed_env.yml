@@ -29,11 +29,14 @@ jobs:
             echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
           fi
           json="{\"include\":["
+          echo "Git Diff: ${DIFF}"
           for line in $DIFF; do
             if [[ $line =~ environments ]]; then
                 env_name=$( basename ${line%/*} )
+                echo "Environment in git diff: ${env_name}"
                 if ! [[ $json =~ $env_name ]] && [ -d "environments/$env_name" ]; then
                     json="$json{\"environment\":\"$env_name\"},"
+                    echo "Environment added to matrix: ${json}"
                 fi
             fi
           done
