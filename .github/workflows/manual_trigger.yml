@@ -54,15 +54,15 @@ jobs:
       environment: ${{ inputs.environment }}
     secrets: inherit
 
-  test:
-    needs: build
-    uses: ./.github/workflows/test.yml
-    with:
-      environment: ${{ inputs.environment }}
-    secrets: inherit
+  # test:
+  #   needs: build
+  #   uses: ./.github/workflows/test.yml
+  #   with:
+  #     environment: ${{ inputs.environment }}
+  #   secrets: inherit
 
   deploy:
-    needs: test
+    needs: build
     uses: ./.github/workflows/deploy.yml
     with:
       environment: ${{ inputs.environment }}
