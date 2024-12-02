@@ -98,7 +98,7 @@ jobs:
           ssh ${{ secrets.USER }}@${{ secrets.HOST }} -i ${{ steps.ssh.outputs.private-key-path }} /bin/bash <<'EOT'
           set -e
           export SCRIPT_DIR="${{ secrets.REPO_PATH }}/scripts"
-          export CONDA_ENVIRONMENT="${{ matrix.environment }}"
+          export CONDA_ENVIRONMENT="${{ inputs.environment }}"
           export ADMIN_DIR="${{ vars.ADMIN_DIR }}"
           export CONDA_BASE="${{ vars.CONDA_BASE }}"
           export APPS_USERS_GROUP="${{ vars.APPS_USERS_GROUP }}"
