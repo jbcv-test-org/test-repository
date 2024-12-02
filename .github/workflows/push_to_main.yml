@@ -1,0 +1,44 @@
+name: Deploy conda env
+on:
+  push:
+    branches: main
+jobs:
+  generate_matrix:
+    uses: ./.github/workflows/get_changed_env.yml
+
+  setup:
+    runs-on: ubuntu-latest
+    if: ${{ needs.generate_matrix.outputs.environments != '[]' }}
+    environment: Gadi
+    steps:
+      - name: Checkout repository
+        ### Latest at time of writing
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: access-nri/actions/.github/actions/setup-ssh@main
+        id: ssh
+        with:
+          hosts: ${{ secrets.HOST_DATA }}
+          private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Sync repository to Gadi
+        run: |
+          rsync -e 'ssh -i ${{ steps.ssh.outputs.private-key-path }}' \
+            -avz --delete --exclude=/.git/ --exclude=/.github/ \
+            ./ \
+            ${{ secrets.USER }}@${{ secrets.HOST_DATA }}:${{ secrets.REPO_PATH }}
+
+  deploy:
+    needs: [ generate_matrix, setup ]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ matrix.environment }}
+    secrets: inherit
+    if: ${{ needs.generate_matrix.outputs.environments != '[]' }}
+    strategy: 
+      matrix: 
+        environment: ${{fromJson(needs.generate_matrix.outputs.environments)}}
+      max-parallel: 1
+      fail-fast: false
+    

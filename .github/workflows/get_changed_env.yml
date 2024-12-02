@@ -1,0 +1,46 @@
+name: Get changed conda envs
+on:
+  workflow_call:
+    outputs:
+      environments: 
+        value: ${{ jobs.generate_matrix.outputs.environments }}
+jobs:
+  generate_matrix:
+    name: Determine changed environments
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ steps.diff.outputs.environments }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check changed environments
+        id: diff
+        run: |
+          # See https://github.community/t/check-pushed-file-changes-with-git-diff-tree-in-github-actions/17220/10
+          ### https://stackoverflow.com/questions/59977364/github-actions-how-use-strategy-matrix-with-script
+          if [ $GITHUB_BASE_REF ]; then
+            # Pull Request
+            git fetch origin $GITHUB_BASE_REF --depth=1
+            export DIFF=$( git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA )
+            echo "Diff between origin/$GITHUB_BASE_REF and $GITHUB_SHA"
+          else
+            # Push
+            git fetch origin ${{ github.event.before }} --depth=1
+            export DIFF=$( git diff --name-only ${{ github.event.before }} $GITHUB_SHA )
+            echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+          fi
+          json="["
+          for line in $DIFF; do
+            # Check if string in the git diff starts with environments
+            if [[ $line =~ environments/* ]]; then
+                env_name=$( basename ${line%/*} )
+                # Check if environment has already been added to the array,
+                # and it has been deleted from the repository
+                if ! [[ $json =~ "\"$env_name\"" ]] && [ -d "environments/$env_name" ]; then
+                    json="$json\"$env_name\","
+                fi
+            fi
+          done
+          ### https://github.com/actions/runner/issues/2947
+          environments=$( echo "${json%,}]" | jq -r 'tostring' )
+          echo "Changed environments matrix: ${environments}"
+          echo "environments=${environments}" >> $GITHUB_OUTPUT
