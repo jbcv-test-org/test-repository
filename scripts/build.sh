@@ -118,6 +118,7 @@ function inner() {
     for override in "${SCRIPT_DIR}"/overrides/*; do
         copy_if_changed "${override}" "${CONDA_SCRIPT_PATH}"/overrides/"${override##*/}"
     done
+    mkdir -p "${CONDA_MODULE_PATH}"
     copy_and_replace_if_changed "${SCRIPT_DIR}"/../modules/common_v3 "${CONDA_MODULE_PATH}"/.common_v3       CONDA_BASE APPS_SUBDIR CONDA_INSTALL_BASENAME SCRIPT_SUBDIR
     copy_and_replace_if_changed "${SCRIPT_DIR}"/launcher_conf.sh     "${CONDA_SCRIPT_PATH}"/launcher_conf.sh CONDA_BASE APPS_SUBDIR CONDA_INSTALL_BASENAME
 
@@ -160,7 +161,7 @@ fi
 if [[ -d "${CONDA_INSTALLATION_PATH}" ]]; then
     mkdir -p "${CONDA_OUTER_BASE}"
     echo "Copying base conda installation to ${CONDA_TEMP_PATH}"
-    rsync --recursive --links --perms --times --specials --partial --one-file-system --hard-links --acls --relative --exclude=*.sqsh -- "${CONDA_INSTALLATION_PATH}" "${CONDA_SCRIPT_PATH}" "${CONDA_MODULE_PATH}" "${CONDA_OUTER_BASE}"/
+    rsync --recursive --links --perms --times --specials --partial --one-file-system --hard-links --acls --relative --exclude=*.sqsh -- "${CONDA_INSTALLATION_PATH}" "${CONDA_SCRIPT_PATH}" "${CONDA_OUTER_BASE}"/
     echo "Done"
 else
     echo "Base installation not present - initialising"
