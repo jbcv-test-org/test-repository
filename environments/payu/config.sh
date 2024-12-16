@@ -16,7 +16,8 @@ export ENVIRONMENT=payu
 export FULLENV="${ENVIRONMENT}-${VERSION_TO_MODIFY}"
 export MODULE_VERSION="${VERSION_TO_MODIFY}"
 
-# Override module path settings
+# Override general module path settings to name modulefiles payu/$VERSION
+# in build scripts and custom deploy script
 export MODULE_NAME="${ENVIRONMENT}"
 export MODULE_PATH="${CONDA_BASE}"/./"${MODULE_SUBDIR}"
 export CONDA_MODULE_PATH="${MODULE_PATH}"/"${MODULE_NAME}"
