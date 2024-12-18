@@ -236,7 +236,7 @@ chgrp -R "${APPS_USERS_GROUP}" squashfs-root
 mksquashfs squashfs-root "${FULLENV}".sqsh -no-fragments -no-duplicates -no-sparse -no-exports -no-recovery -noI -noD -noF -noX -processors 8 2>/dev/null
 ### Stage this file and rename when we're ready
 cp "${FULLENV}".sqsh "${BUILD_STAGE_DIR}"/"${FULLENV}".sqsh.tmp
-set_apps_perms "${BUILD_STAGE_DIR}"/"${FULLENV}".sqsh.tmp
+# set_apps_perms "${BUILD_STAGE_DIR}"/"${FULLENV}".sqsh.tmp
 popd
 
 if [[ -e "${SCRIPT_DIR}"/../environments/"${CONDA_ENVIRONMENT}"/build_outer.sh ]]; then
@@ -251,7 +251,7 @@ ln -s /opt/conda/"${FULLENV}" "${CONDA_OUTER_BASE}"/"${APPS_SUBDIR}"/"${CONDA_IN
 construct_module_insert "${SINGULARITY_BINARY_PATH}" "${OVERLAY_BASE}" "${my_container}" "${BUILD_STAGE_DIR}"/"${FULLENV}".sqsh.tmp "${SCRIPT_DIR}"/condaenv.sh "${CONDA_INSTALLATION_PATH}" /opt/conda/"${FULLENV}" "${CONDA_BASE}"/"${SCRIPT_SUBDIR}"/"${FULLENV}".d/bin "${CONDA_OUTER_BASE}"/"${MODULE_SUBDIR}"/"${MODULE_NAME}"/."${MODULE_VERSION}"
 
 ### Set permissions on base environment
-set_apps_perms "${CONDA_OUTER_BASE}"
+# set_apps_perms "${CONDA_OUTER_BASE}"
 
 ### Archive base env
 pushd "${CONDA_OUTER_BASE}"
