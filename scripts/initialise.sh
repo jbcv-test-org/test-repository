@@ -43,7 +43,7 @@ mkdir -p "${OVERLAY_BASE}"
 mkdir -p "${CONDA_OUTER_BASE}"/"${APPS_SUBDIR}"/"${CONDA_INSTALL_BASENAME}"/etc/
 cp "${CONTAINER_PATH}" "${CONDA_OUTER_BASE}"/"${APPS_SUBDIR}"/"${CONDA_INSTALL_BASENAME}"/etc/
 ### Set permissions
-set_apps_perms "${CONDA_OUTER_BASE}"
+# set_apps_perms "${CONDA_OUTER_BASE}"
 
 ### Create necessary directories:
 mkdir -p "${CONDA_OUTER_BASE}"/"${APPS_SUBDIR}"/"${CONDA_INSTALL_BASENAME}"/envs/
