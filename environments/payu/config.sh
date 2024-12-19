@@ -9,7 +9,7 @@
 
 ### Optional config for custom deploy script
 export VERSION_TO_MODIFY=1.1.6
-export STABLE_VERSION=dev
+export STABLE_VERSION=1.1.6
 
 ### Version settings
 export ENVIRONMENT=payu

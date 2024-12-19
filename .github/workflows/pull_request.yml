@@ -133,7 +133,7 @@ jobs:
           source "${REPO_PATH}"/scripts/install_config.sh
           source "${REPO_PATH}"/scripts/functions.sh
           mkdir -p "${ADMIN_DIR}" "${JOB_LOG_DIR}" "${BUILD_STAGE_DIR}"
-          # set_admin_perms "${ADMIN_DIR}" "${JOB_LOG_DIR}" "${BUILD_STAGE_DIR}"
+          set_admin_perms "${ADMIN_DIR}" "${JOB_LOG_DIR}" "${BUILD_STAGE_DIR}"
           EOT
 
       - name: Build conda environment
