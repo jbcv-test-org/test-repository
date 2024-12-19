@@ -88,7 +88,7 @@ module-version ${module_name}/${unstable} ${env_name}-unstable
 
 EOF
 
-    # set_apps_perms "${module_path}/.modulerc"
+    set_apps_perms "${module_path}/.modulerc"
 
 }
 
@@ -105,7 +105,7 @@ module-version ${module_name}/${stable} ${env_name}
 
 EOF
 
-    # set_apps_perms "${module_path}/.modulerc"
+    set_apps_perms "${module_path}/.modulerc"
 
 }
 
@@ -118,7 +118,7 @@ function symlink_atomic_update() {
     ln -s "${link_target}" "${tmp_link_name}"
     mv -T "${tmp_link_name}" "${link_name}"
 
-    # set_apps_perms "${link_name}"
+    set_apps_perms "${link_name}"
 }
 
 function construct_module_insert() {
