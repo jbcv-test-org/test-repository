@@ -5,7 +5,7 @@ channels:
   - conda-forge
 dependencies:
   - python==3.10
-  # Use latest changes from payu's master branch
+  # Use latest changes from payu's main branch
   - pip:
     - git+https://github.com/payu-org/payu.git@master
   - f90nml

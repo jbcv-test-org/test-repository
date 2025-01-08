@@ -24,7 +24,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Fetch the last successful workflow run time
-          last_run_time=$(gh run list --status success --workflow deploy-dev.yml --json updatedAt --jq .[0].updatedAt)
+          last_run_time=$(gh run list --status success --workflow deploy_payu_dev.yml --json updatedAt --jq .[0].updatedAt)
 
           echo "Last successful workflow run time: $last_run_time"
           echo "last-run-time=$last_run_time" >> $GITHUB_OUTPUT
