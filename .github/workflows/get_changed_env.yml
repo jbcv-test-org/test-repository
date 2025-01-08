@@ -28,7 +28,7 @@ jobs:
           for env in "${ignore[@]}"; do
             json="$json\"$env\","
           done
-          echo "environments_ignore=${json}" >> $GITHUB_ENV
+          echo "environments_ignore=$(echo "${json%,}]")" >> $GITHUB_ENV
 
       - name: Check changed environments
         id: diff
@@ -55,7 +55,7 @@ jobs:
                 # and it has been deleted from the repository
                 if ! [[ $json =~ "\"$env_name\"" ]] && [ -d "environments/$env_name" ]; then
                   # Check environment is not in the list of ignored environments
-                  if ! [[ ${{ steps.ignore.outputs.environments_ignore }} =~ "\"$env_name\"" ]]; then
+                  if ! [[ "${{ steps.ignore.outputs.environments_ignore }}" =~ "\"$env_name\"" ]]; then
                     json="$json\"$env_name\","
                   fi
                 fi
