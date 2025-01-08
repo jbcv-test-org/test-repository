@@ -1,8 +1,14 @@
 name: Get changed conda envs
 on:
   workflow_call:
+    inputs:
+      ignore-environments:
+        description: 'List of environments to ignore (space separated)'
+        required: false
+        default: ''
+        type: string
     outputs:
-      environments: 
+      environments:
         value: ${{ jobs.generate_matrix.outputs.environments }}
 jobs:
   generate_matrix:
@@ -12,6 +18,18 @@ jobs:
       environments: ${{ steps.diff.outputs.environments }}
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Build list of ignored environments
+        id: ignore
+        run: |
+          # Create an json array of ignored environments
+          IFS=' ' read -r -a ignore <<< "${{ inputs.ignore-environments }}"
+          json="["
+          for env in "${ignore[@]}"; do
+            json="$json\"$env\","
+          done
+          echo "environments_ignore=$(echo "${json%,}]")" >> $GITHUB_ENV
+
       - name: Check changed environments
         id: diff
         run: |
@@ -36,7 +54,10 @@ jobs:
                 # Check if environment has already been added to the array,
                 # and it has been deleted from the repository
                 if ! [[ $json =~ "\"$env_name\"" ]] && [ -d "environments/$env_name" ]; then
+                  # Check environment is not in the list of ignored environments
+                  if ! [[ "${{ steps.ignore.outputs.environments_ignore }}" =~ "\"$env_name\"" ]]; then
                     json="$json\"$env_name\","
+                  fi
                 fi
             fi
           done
