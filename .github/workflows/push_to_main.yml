@@ -10,7 +10,7 @@ jobs:
   generate_matrix:
     uses: ./.github/workflows/get_changed_env.yml
     with:
-      ignore-environments: "payu-dev"
+      ignore-environments: '["payu-dev"]'
 
   deploy:
     needs: [ generate_matrix ]
