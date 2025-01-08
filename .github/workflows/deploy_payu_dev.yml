@@ -85,7 +85,7 @@ jobs:
       - name: Update Version in config file
         run: |
           # Update VERSION_TO_MODIFY in payu-dev config file
-          sed -i "s|^export VERSION_TO_MODIFY=.*$|export VERSION_TO_MODIFY=${{ steps.payu-version.outputs.version }}|g" environments/payu-dev/config.sh
+          sed -i "s|^export VERSION_TO_MODIFY=.*$|export VERSION_TO_MODIFY=${{ steps.payu.outputs.version }}|g" environments/payu-dev/config.sh
 
       - name: Setup SSH
         uses: access-nri/actions/.github/actions/setup-ssh@main
