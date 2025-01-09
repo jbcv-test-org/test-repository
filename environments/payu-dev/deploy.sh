@@ -1,13 +1,12 @@
 # Switch payu-dev version
 
 ### Update payu-dev
-DEV_MODULE_ALIAS="${MODULE_NAME}"/dev
 DEV_ENV_ALIAS="${ENVIRONMENT}"-dev
-CURRENT_DEV_MODULE=$( get_aliased_module "${DEV_MODULE_ALIAS}" "${MODULE_PATH}" )
+CURRENT_DEV_MODULE=$( get_aliased_module "${MODULE_NAME}"/dev "${MODULE_PATH}" )
 NEXT_DEV_ENV="${ENVIRONMENT}-${VERSION_TO_MODIFY}"
 
 echo "Updating dev environment to ${NEXT_DEV_ENV}"
-write_modulerc_stable "${VERSION_TO_MODIFY}" "${DEV_MODULE_ALIAS}" "${CONDA_MODULE_PATH}" "${MODULE_NAME}"
+write_modulerc_stable "${VERSION_TO_MODIFY}" "dev" "${CONDA_MODULE_PATH}" "${MODULE_NAME}"
 symlink_atomic_update "${CONDA_INSTALLATION_PATH}"/envs/"${DEV_ENV_ALIAS}" "${NEXT_DEV_ENV}"
 symlink_atomic_update "${CONDA_SCRIPT_PATH}"/"${DEV_ENV_ALIAS}".d "${NEXT_DEV_ENV}".d
 
