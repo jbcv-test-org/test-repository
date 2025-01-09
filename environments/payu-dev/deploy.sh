@@ -10,20 +10,17 @@ write_modulerc_stable "${VERSION_TO_MODIFY}" "dev" "${CONDA_MODULE_PATH}" "${MOD
 symlink_atomic_update "${CONDA_INSTALLATION_PATH}"/envs/"${DEV_ENV_ALIAS}" "${NEXT_DEV_ENV}"
 symlink_atomic_update "${CONDA_SCRIPT_PATH}"/"${DEV_ENV_ALIAS}".d "${NEXT_DEV_ENV}".d
 
-
 # Remove old versions of payu-dev
 # List of modulefiles
 payu_dev_versions=$(ls "${CONDA_MODULE_PATH}" | grep -E '^dev-[0-9]{8}T[0-9]{6}Z-.*')
-# Order by date
-payu_dev_versions=$(echo "$payu_dev_versions" | sort -r)
-# Remove 2 latest versions # Or remove all but latest version and the last payu-dev version?
-payu_dev_versions=$(echo "$payu_dev_versions" | tail -n +3)
+# Order by date, and remove the 2 latest versions
+old_versions=$(echo "$payu_dev_versions" | sort -r | tail -n +3)
 
-echo "Old payu versions: $payu_dev_versions"
+echo "::notice::Removed payu/dev versions: $old_versions"
 echo "Previous dev version: $CURRENT_DEV_MODULE"
 
 # For each version
-for old_version in $payu_dev_versions; do
+for old_version in $old_versions; do
     # Check old version is not an empty string
     if [ -z "$old_version" ]; then
         echo "Old version is empty string - Check payu_dev_versions list"
