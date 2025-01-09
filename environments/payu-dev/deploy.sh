@@ -28,11 +28,11 @@ for old_version in $old_versions; do
     unlink "${CONDA_MODULE_PATH}"/"${old_version}"
     rm "${CONDA_MODULE_PATH}"/."${old_version}"
     # Remove launcher script directories
-    rm -rf "${CONDA_SCRIPT_PATH}"/"${old_version}".d
-    # Remove squashfs files
-    rm -rf "${CONDA_INSTALLATION_PATH}"/envs/"${old_version}".sqsh
+    rm -rf "${CONDA_SCRIPT_PATH}"/"${ENVIRONTMENT}"-"${old_version}".d
+    # Remove squashfs file
+    rm "${CONDA_INSTALLATION_PATH}"/envs/"${ENVIRONTMENT}"-"${old_version}".sqsh
     # Remove conda environment symlink
-    unlink "${CONDA_INSTALLATION_PATH}"/envs/"${old_version}"
+    unlink "${CONDA_INSTALLATION_PATH}"/envs/"${ENVIRONTMENT}"-"${old_version}"
 
     echo "::notice::Removed payu/dev version: $old_version"
 done
