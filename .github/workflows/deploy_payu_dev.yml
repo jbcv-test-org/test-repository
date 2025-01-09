@@ -9,38 +9,6 @@ on:
     paths:
       - 'environments/payu-dev/**' # Run when payu-dev environment is updated
 jobs:
-  build_base_image:
-    runs-on: ubuntu-latest
-    container:
-      image: quay.io/singularity/singularity:v3.11.4
-      options: --privileged
-    outputs:
-      built-container: ${{ steps.changed-container-def.outputs.containerdef_any_changed }}
-    steps:
-      - name: Checkout repository
-        ### Latest at time of writing
-        uses: actions/checkout@v4
-
-      - name: Check if container definition has changed
-        id: changed-container-def
-        uses: tj-actions/changed-files@48d8f15b2aaa3d255ca5af3eba4870f807ce6b3c # v43.0.2
-        with:
-          files_yaml: |
-            containerdef:
-              - container/container.def
-
-      - name: Build container if definition has changed
-        if: steps.changed-container-def.outputs.containerdef_any_changed == 'true'
-        run: |
-            sudo -E singularity build container/base.sif container/container.def
-
-      - name: Upload base container
-        if: steps.changed-container-def.outputs.containerdef_any_changed == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-            name: base-container
-            path: container/base.sif
-
   check-for-payu-updates:
     runs-on: ubuntu-latest
     outputs:
@@ -89,7 +57,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - check-for-payu-updates
-      - build_base_image
     # Deploy payu if manually triggered, payu environment files has been updated,
     # or if there's new commits to payu repository
     if: >
@@ -101,13 +68,6 @@ jobs:
       environment: payu-dev
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download base container
-        if: needs.build_base_image.outputs.built-container == 'true'
-        uses: actions/download-artifact@v4
-        with:
-            name: base-container
-            path: container
 
       - name: Get Payu Version
         id: payu
