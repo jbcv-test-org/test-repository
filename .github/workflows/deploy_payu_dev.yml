@@ -65,7 +65,7 @@ jobs:
         ### Latest at time of writing
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Check if container definition has changed
         id: changed-container-def
