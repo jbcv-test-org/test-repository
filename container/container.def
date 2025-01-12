@@ -41,5 +41,3 @@ Bootstrap: scratch
 
 %runscript
         /usr/bin/bash -l
-
-
