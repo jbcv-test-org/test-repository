@@ -59,29 +59,26 @@ jobs:
       image: quay.io/singularity/singularity:v3.11.4
       options: --privileged
     outputs:
-      built-container: ${{ steps.changed-container-def.outputs.containerdef_any_changed }}
+      built-container: ${{ steps.changed-container-def.outputs.containerdef }}
     steps:
       - name: Checkout repository
-        ### Latest at time of writing
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Check if container definition has changed
+      - name: Filter files
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
         id: changed-container-def
-        uses: tj-actions/changed-files@48d8f15b2aaa3d255ca5af3eba4870f807ce6b3c # v43.0.2
         with:
-          files_yaml: |
+          filters: |
             containerdef:
               - container/container.def
 
       - name: Build container if definition has changed
-        if: steps.changed-container-def.outputs.containerdef_any_changed == 'true'
+        if: steps.changed-container-def.outputs.containerdef == 'true'
         run: |
             sudo -E singularity build container/base.sif container/container.def
 
       - name: Upload base container
-        if: steps.changed-container-def.outputs.containerdef_any_changed == 'true'
+        if: steps.changed-container-def.outputs.containerdef == 'true'
         uses: actions/upload-artifact@v4
         with:
             name: base-container
