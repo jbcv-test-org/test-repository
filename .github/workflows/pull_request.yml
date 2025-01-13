@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build container if definition has changed
+      - name: Build container
         run: |
             sudo -E singularity build container/base.sif container/container.def
 
