@@ -53,33 +53,18 @@ jobs:
 
   build_base_image:
     runs-on: ubuntu-latest
-    # Run only for push events
-    if: github.event_name == 'push'
     container:
       image: quay.io/singularity/singularity:v3.11.4
       options: --privileged
-    outputs:
-      built-container: ${{ steps.changed-container-def.outputs.containerdef }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Filter files
-        id: changed-container-def
-        run: |
-          if git diff --exit-code HEAD..HEAD~1 -- container/container.def; then
-            echo "containerdef=false" >> $GITHUB_OUTPUT
-          else
-            echo "containerdef=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Build container if definition has changed
-        if: steps.changed-container-def.outputs.containerdef == 'true'
         run: |
             sudo -E singularity build container/base.sif container/container.def
 
       - name: Upload base container
-        if: steps.changed-container-def.outputs.containerdef == 'true'
         uses: actions/upload-artifact@v4
         with:
             name: base-container
@@ -91,14 +76,12 @@ jobs:
     needs:
       - build_base_image
       - check-for-payu-updates
-    # Allow needs.build_base_image job to be skipped, and
-    # deploy if manually triggered, payu environment files has been updated,
+    # Deploy if manually triggered, payu environment files has been updated,
     # or if there's new commits to payu repository
     if: >
-      always() && !cancelled() && !failure() &&
-      ( needs.check-for-payu-updates.outputs.commits-count > 0 ||
+      needs.check-for-payu-updates.outputs.commits-count > 0 ||
       github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch' )
+      github.event_name == 'workflow_dispatch'
     environment: Gadi
     env:
       environment: payu-dev
@@ -106,9 +89,6 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Download base container
-        if: |
-          needs.build_base_image.result == 'success' &&
-          needs.build_base_image.outputs.built-container == 'true'
         uses: actions/download-artifact@v4
         with:
             name: base-container
@@ -134,6 +114,19 @@ jobs:
           # Update VERSION_TO_MODIFY in payu-dev config file
           sed -i "s|^export VERSION_TO_MODIFY=.*$|export VERSION_TO_MODIFY=${{ steps.payu.outputs.version }}|g" environments/payu-dev/config.sh
 
+      - name: Set release/prerelease directories
+        run: |
+          # Check if environment is in list of prerelease environments
+          if [[ '${{ vars.PRERELEASE_ENVIRONMENTS }}' =~ '"${{ matrix.environment }}"' ]]; then
+            echo "Using prerelease deployment directories"
+            echo "CONDA_BASE=${{ vars.PRERELEASE_CONDA_BASE }}" >> $GITHUB_ENV
+            echo "ADMIN_DIR=${{ vars.PRERELEASE_ADMIN_DIR }}" >> $GITHUB_ENV
+          else
+            echo "Using release deployment directories"
+            echo "CONDA_BASE=${{ vars.CONDA_BASE }}" >> $GITHUB_ENV
+            echo "ADMIN_DIR=${{ vars.ADMIN_DIR }}" >> $GITHUB_ENV
+          fi
+
       - name: Setup SSH
         uses: access-nri/actions/.github/actions/setup-ssh@main
         id: ssh
@@ -154,8 +147,8 @@ jobs:
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOST }} -i ${{ steps.ssh.outputs.private-key-path }} /bin/bash <<'EOT'
           set -e
-          export ADMIN_DIR="${{ vars.ADMIN_DIR }}"
-          export CONDA_BASE="${{ vars.CONDA_BASE }}"
+          export ADMIN_DIR="${{ env.ADMIN_DIR }}"
+          export CONDA_BASE="${{ env.CONDA_BASE }}"
           export APPS_USERS_GROUP="${{ vars.APPS_USERS_GROUP }}"
           export APPS_OWNER="${{ vars.APPS_OWNER }}"
 
@@ -172,8 +165,8 @@ jobs:
           set -e
           export SCRIPT_DIR="${{ secrets.REPO_PATH }}/scripts"
           export CONDA_ENVIRONMENT="${{ env.environment }}"
-          export ADMIN_DIR="${{ vars.ADMIN_DIR }}"
-          export CONDA_BASE="${{ vars.CONDA_BASE }}"
+          export ADMIN_DIR="${{ env.ADMIN_DIR }}"
+          export CONDA_BASE="${{ env.CONDA_BASE }}"
           export APPS_USERS_GROUP="${{ vars.APPS_USERS_GROUP }}"
           export APPS_OWNER="${{ vars.APPS_OWNER }}"
           PROJECT=${{ vars.PROJECT }}
@@ -195,8 +188,8 @@ jobs:
           set -e
           export SCRIPT_DIR="${{secrets.REPO_PATH}}/scripts"
           export CONDA_ENVIRONMENT="${{ env.environment }}"
-          export ADMIN_DIR="${{ vars.ADMIN_DIR }}"
-          export CONDA_BASE="${{ vars.CONDA_BASE }}"
+          export ADMIN_DIR="${{ env.ADMIN_DIR }}"
+          export CONDA_BASE="${{ env.CONDA_BASE }}"
           export APPS_USERS_GROUP="${{ vars.APPS_USERS_GROUP }}"
           export APPS_OWNER="${{ vars.APPS_OWNER }}"
           PROJECT=${{ vars.PROJECT }}
@@ -218,8 +211,8 @@ jobs:
           set -e
           export SCRIPT_DIR="${{ secrets.REPO_PATH }}/scripts"
           export CONDA_ENVIRONMENT="${{ env.environment }}"
-          export ADMIN_DIR="${{ vars.ADMIN_DIR }}"
-          export CONDA_BASE="${{ vars.CONDA_BASE }}"
+          export ADMIN_DIR="${{ env.ADMIN_DIR }}"
+          export CONDA_BASE="${{ env.CONDA_BASE }}"
           export APPS_USERS_GROUP="${{ vars.APPS_USERS_GROUP }}"
           export APPS_OWNER="${{ vars.APPS_OWNER }}"
 
