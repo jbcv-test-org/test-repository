@@ -21,7 +21,7 @@ jobs:
             exit 1
           fi
 
-          if [ -d "environments/${{ inputs.environment }}"]; then
+          if [[ ! -d "environments/${{ inputs.environment }}" ]]; then
             echo "::error::No environment configuration directory found"
             exit 1
           fi
