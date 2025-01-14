@@ -99,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
             name: ${{ env.ARTIFACT_NAME }}
-            path: environment/${{ env.environment }}/*
+            path: environments/${{ env.environment }}/*
 
   build_test_and_deploy:
     name: Build, test and deploy payu-dev
