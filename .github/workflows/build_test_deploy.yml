@@ -14,6 +14,14 @@ on:
         description: "Run build and test PBS jobs"
         type: boolean
         required: true
+      base_image_artifact:
+        description: "Name of base image artifact"
+        type: string
+        required: false
+      environment_artifact:
+        description: "Name of changed environment files artifact"
+        type: string
+        required: false
       
 jobs:
   build_test_and_deploy:
@@ -85,11 +93,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download environment files artifact
+        if: inputs.environment_artifact == ''
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.environment_artifact }}
+          path: environment/${{ inputs.environment }}
+
       - name: Download base container
         if: inputs.build_and_test
         uses: actions/download-artifact@v4
         with:
-            name: base-container
+            name: ${{ inputs.base_image_artifact }}
             path: container
 
       - name: Setup SSH

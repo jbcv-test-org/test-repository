@@ -24,3 +24,5 @@ jobs:
       environment: ${{ matrix.environment }}
       build_and_test: true
       deploy: false
+      base_image_artifact: ${{ needs.build_base_image.outputs.artifact-name }}
+    secrets: inherit

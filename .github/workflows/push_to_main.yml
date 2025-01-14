@@ -25,3 +25,4 @@ jobs:
       environment: ${{ matrix.environment }}
       build_and_test: false
       deploy: true
+    secrets: inherit

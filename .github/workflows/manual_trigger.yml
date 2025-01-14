@@ -37,3 +37,5 @@ jobs:
       environment: ${{ inputs.environment }}
       build_and_test: false
       deploy: true
+      base_image_artifact: ${{ needs.build_base_image.outputs.artifact-name }}
+    secrets: inherit
