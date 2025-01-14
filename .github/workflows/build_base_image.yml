@@ -2,7 +2,7 @@ name: Build base singularity image
 on:
   workflow_call:
 jobs:
-  build_base_image:
+  build:
     runs-on: ubuntu-latest
     container:
       image: quay.io/singularity/singularity:v3.11.4
