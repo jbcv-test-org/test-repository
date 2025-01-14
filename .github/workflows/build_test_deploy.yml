@@ -98,7 +98,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.environment_artifact }}
-          path: environment/${{ inputs.environment }}
+          path: environments/${{ inputs.environment }}
 
       - name: Download base container
         if: inputs.build_and_test
