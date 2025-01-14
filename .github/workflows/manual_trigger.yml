@@ -35,7 +35,7 @@ jobs:
     uses: ./.github/workflows/build_test_deploy.yml
     with:
       environment: ${{ inputs.environment }}
-      build_and_test: false
+      build_and_test: true
       deploy: true
       base_image_artifact: ${{ needs.build_base_image.outputs.artifact-name }}
     secrets: inherit

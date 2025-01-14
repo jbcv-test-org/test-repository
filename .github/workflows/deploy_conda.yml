@@ -1,4 +1,4 @@
-name: Deploy conda env
+name: Deploy conda env # Generic conda environment deploy
 on:
   push:
     branches: main
