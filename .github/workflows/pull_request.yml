@@ -11,7 +11,7 @@ jobs:
     if: ${{ needs.generate_matrix.outputs.environments != '[]' }}
     uses: ./.github/workflows/build_base_image.yml
 
-  build-and-test:
+  build_and_test:
     needs: [ generate_matrix, build_base_image ]
     if: ${{ needs.generate_matrix.outputs.environments != '[]' }}
     strategy:
