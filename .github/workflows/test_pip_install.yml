@@ -1,0 +1,58 @@
+name: Build and test conda env
+
+on: pull_request
+
+jobs:
+  build_venv_env:
+    runs-on: ubuntu-latest
+    environment: Gadi
+    steps:
+      - name: Setup SSH
+        uses: access-nri/actions/.github/actions/setup-ssh@main
+        id: ssh
+        with:
+          hosts: |
+            ${{ secrets.HOST }}
+            ${{ secrets.HOST_DATA }}
+          private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Create Admin dirs
+        env:
+          TEST_VENV_LOCATION: /scratch/tm70/jb4202/test-gh-action/test-venv
+        run: |
+          ssh ${{ secrets.USER }}@${{ secrets.HOST }} -i ${{ steps.ssh.outputs.private-key-path }} /bin/bash <<'EOT'
+          # set -e
+
+          mkdir -p "${TEST_VENV_LOCATION}"
+
+           # Load payu module
+          if [ "dev" == "dev" ]; then
+            echo "::warning::Using the prerelease module payu/dev for testing"
+            module use /g/data/vk83/prerelease/modules
+          else
+            module use /g/data/vk83/modules
+          fi
+          module load payu/dev
+
+          # Create testing virtual environment
+          # Note: --system-site-packages uses packages from payu modules
+          python3 -m venv "${{ env.TEST_VENV_LOCATION }}" --system-site-packages
+
+          # Activate environment
+          source "${{ env.TEST_VENV_LOCATION }}/bin/activate"
+
+          # Install model-config-tests
+          TEST_VERSION="non-existent"
+          pip install "model-config-tests==${TEST_VERSION}" || {
+            echo "Failed to install model-config-tests==${TEST_VERSION} from PyPI"
+            echo "Attempting to install directly from Github repository with reference ${TEST_VERSION}"
+            pip install git+https://github.com/access-nri/model-config-tests.git@${TEST_VERSION}
+          }
+
+          set +e
+          rm -rf /scratch/tm70/jb4202/test-gh-action/test-venv
+          echo "Installed.."
+          exit 0
+          EOT
+
+
