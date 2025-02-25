@@ -21,9 +21,9 @@ jobs:
           TEST_VENV_LOCATION: /scratch/tm70/jb4202/test-gh-action/test-venv
         run: |
           ssh ${{ secrets.USER }}@${{ secrets.HOST }} -i ${{ steps.ssh.outputs.private-key-path }} /bin/bash <<'EOT'
-          # set -e
+          set -e
 
-          mkdir -p "${TEST_VENV_LOCATION}"
+          mkdir -p "${{ env.TEST_VENV_LOCATION }}"
 
            # Load payu module
           if [ "dev" == "dev" ]; then
