@@ -116,7 +116,7 @@ function inner() {
     ### Set up environment activate script
     cat > "${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/bin/activate" <<EOF
 export PATH=${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/bin:\$PATH
-for config in "${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/etc/conda/activate.d/*.sh; do
+for config in "${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/etc/conda/activate.d/*.sh"; do
     if [ -r "\$config" ]; then
         source "\$config"
     fi
