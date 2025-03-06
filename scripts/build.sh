@@ -57,10 +57,10 @@ function inner() {
     
     ${MAMBA} env export -p "${CONDA_INSTALLATION_PATH}/envs/${FULLENV}" > deployed."${CONDA_ENVIRONMENT}".yml
 
-    if [[ "${1}" == "--update" ]] && diff -q deployed."${CONDA_ENVIRONMENT}".yml deployed."${CONDA_ENVIRONMENT}".old.yml; then
-        echo "No changes detected in the environment, discarding update"
-        exit 0
-    fi
+    # if [[ "${1}" == "--update" ]] && diff -q deployed."${CONDA_ENVIRONMENT}".yml deployed."${CONDA_ENVIRONMENT}".old.yml; then
+    #     echo "No changes detected in the environment, discarding update"
+    #     exit 0
+    # fi
 
     pushd "${ENV_INSTALLATION_PATH}"
     ### Get rid of stuff from packages we don't want
@@ -227,11 +227,11 @@ if [[ -e "${CONTAINER_PATH}" ]]; then
     cp "${CONTAINER_PATH}" "${CONDA_OUTER_BASE}"/"${APPS_SUBDIR}"/"${CONDA_INSTALL_BASENAME}"/etc/"${CONTAINER_PATH##*/}"
 fi
 
-if [[ "${DO_UPDATE}" == "--update" ]] && diff -q deployed."${CONDA_ENVIRONMENT}".yml deployed."${CONDA_ENVIRONMENT}".old.yml; then
-    echo "No changes detected in the environment, discarding update"
-    cp deployed."${CONDA_ENVIRONMENT}".yml deployed."${CONDA_ENVIRONMENT}".old.yml "${BUILD_STAGE_DIR}"/
-    exit 0
-fi
+# if [[ "${DO_UPDATE}" == "--update" ]] && diff -q deployed."${CONDA_ENVIRONMENT}".yml deployed."${CONDA_ENVIRONMENT}".old.yml; then
+#     echo "No changes detected in the environment, discarding update"
+#     cp deployed."${CONDA_ENVIRONMENT}".yml deployed."${CONDA_ENVIRONMENT}".old.yml "${BUILD_STAGE_DIR}"/
+#     exit 0
+# fi
 
 
 if [[ "${DO_UPDATE}" == "--install" ]]; then
