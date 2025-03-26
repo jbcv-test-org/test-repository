@@ -15,11 +15,13 @@ function debug_print() {
     echo "$@" 1>&2
 }
 
-if [[ "${CMS_CONDA_DEBUG_SCRIPTS}" ]]; then
-    debug=debug_print
-else
-    debug=true
-fi
+# TEMPORARY ENABLE PRINTING OF DEBUG INFO
+debug=debug_print
+# if [[ "${CMS_CONDA_DEBUG_SCRIPTS}" ]]; then
+#     debug=debug_print
+# else
+#     debug=true
+# fi
 
 wrapper_path=$( realpath "${0}" )
 wrapper_bin=${wrapper_path%/*}
@@ -106,6 +108,7 @@ fi
 
 $debug "CONTAINER_OVERLAY_PATH after override check = " ${CONTAINER_OVERLAY_PATH}
 
+# Note: CONDA_BASE is used in the container runscript to activate the conda environment
 export CONDA_BASE="${CONDA_BASE_ENV_PATH}/envs/${myenv}"
 
 if ! [[ -x "${SINGULARITY_BINARY_PATH}" ]]; then
@@ -161,5 +164,9 @@ bind_str=${bind_str%,}
 
 $debug "binding args= " ${bind_str}
 
-$debug "Singularity invocation: " "$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
-"$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
+# Disable using local python libraries inside the container
+export SINGULARITYENV_PYTHONNOUSERSITE="x"
+
+# Using `singularity run` so the runscript in the container is run
+$debug "Singularity invocation: " "$SINGULARITY_BINARY_PATH" -s run --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
+"$SINGULARITY_BINARY_PATH" -s run --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
