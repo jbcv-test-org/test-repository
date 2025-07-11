@@ -2,7 +2,7 @@ name: Deploy conda env # Generic conda environment deploy
 on:
   push:
     branches: main
-  # Excludes changes from only environments/payu-dev as this is handled by 
+  # Excludes changes from only environments/payu-dev as this is handled by
   # the deploy_payu_dev.yml workflow
     paths-ignore:
       - 'environments/payu-dev/**'

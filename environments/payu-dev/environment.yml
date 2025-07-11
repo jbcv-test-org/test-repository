@@ -5,9 +5,9 @@ channels:
   - conda-forge
 dependencies:
   - python==3.10
-  # Use latest changes from payu's main branch
+  # Install changes on payu fork branch
   - pip:
-    - git+https://github.com/payu-org/payu.git@master
+    - git+https://github.com/ACCESS-NRI/payu.git@546-telemetry
   - f90nml
   - gh
   - git
@@ -17,3 +17,4 @@ dependencies:
   - xarray
   - mule
   - um2nc
+  - accessnri::yamanifest
