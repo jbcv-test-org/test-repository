@@ -35,7 +35,10 @@ export CONDA_INSTALL_BASENAME="base_conda" #TODO: Eventually replace with conda
 # be $ENVIRONMENT-$VERSION, (e.g. conda/analysis3-24.07)
 # Note: this is currently over-ridden in the payu environment config
 # so payu modules are named payu/$MODULE_VERSION (e.g. payu/1.1.5)
-export MODULE_NAME="conda_container" # TODO: Eventually replace with conda
+export MODULE_NAME="conda"
+
+# Common modulefile to use for conda environments
+export COMMON_MODULEFILE="common_v4"
 
 ### Derived locations - extra '.' for arcane rsync magic
 export CONDA_SCRIPT_PATH="${CONDA_BASE}"/./"${SCRIPT_SUBDIR}"
