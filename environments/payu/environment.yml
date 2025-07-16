@@ -5,14 +5,10 @@ channels:
   - conda-forge
 dependencies:
   - python==3.10
-  - accessnri::payu==1.1.6
+  # Install changes on payu fork branch
+  - pip:
+    - git+https://github.com/ACCESS-NRI/payu.git@17-support-container-launcher-script-env
   - f90nml
-  - gh
-  - git
   - nco
   - pytest
-  - openssh>=8.3
-  - xarray
-  - mule
-  - um2nc
   - accessnri::yamanifest
