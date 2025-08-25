@@ -29,6 +29,15 @@ $debug "conf_file = " "${conf_file}"
 
 source "${conf_file}"
 
+# Check if conda environment already activated
+myenv=$( basename "${wrapper_bin%/*}" ".d" )
+myenv="${myenv%-lite}"
+if [[ "${CONDA_DEFAULT_ENV}" != "/opt/conda/${myenv}" ]]; then
+    activate_script="${wrapper_bin}"/launcher_activate.sh
+    $debug "activate_script = " "${activate_script}"
+    source "${activate_script}"
+fi
+
 ### Add some complicated arguments that are never meant to be used by humans
 declare -a PROG_ARGS=()
 while [[ $# -gt 0 ]]; do
@@ -97,7 +106,6 @@ $debug "cmd_to_run = " "${cmd_to_run[@]}"
 ### Reminder: The --overlay argument that appears LAST takes priority, so put the
 ### default container first, that way if we're intentionally trying to use it from
 ### somewhere else (e.g. jobfs), the one on gdata will be mounted but not used.
-myenv=$( basename "${wrapper_bin%/*}" ".d" )
 if ! [[ "${CONTAINER_OVERLAY_PATH_OVERRIDE}" ]]; then
     if ! [[ :"${CONTAINER_OVERLAY_PATH}": =~ :"${CONDA_BASE_ENV_PATH}"/envs/"${myenv}".sqsh: ]]; then
         [[ -r "${CONDA_BASE_ENV_PATH}"/envs/"${myenv}".sqsh ]] && export CONTAINER_OVERLAY_PATH="${CONDA_BASE_ENV_PATH}"/envs/"${myenv}".sqsh:${CONTAINER_OVERLAY_PATH}
@@ -140,6 +148,7 @@ while IFS= read -r -d: i; do
     in_array "${singularity_default_path[@]}" "${i}" && continue
     [[ "${i}" == "/opt/singularity/bin" ]] && continue
     [[ "${i}" == "${wrapper_bin}" ]] && continue
+    [[ ":${SINGULARITYENV_PREPEND_PATH}:" == *":${i}:"* ]] && continue
     SINGULARITYENV_PREPEND_PATH="${SINGULARITYENV_PREPEND_PATH}:${i}"
 done<<<"${PATH%:}:"
 export SINGULARITYENV_PREPEND_PATH=${SINGULARITYENV_PREPEND_PATH#:*}
@@ -161,11 +170,11 @@ bind_str=${bind_str%,}
 
 $debug "binding args= " ${bind_str}
 
-# Disable Python's bytecode cache inside the container
-export SINGULARITYENV_PYTHONDONTWRITEBYTECODE="1"
-
 # Disable using local python libraries inside the container
 export SINGULARITYENV_PYTHONNOUSERSITE="x"
+
+# Disable Python's bytecode cache inside the container
+export SINGULARITYENV_PYTHONDONTWRITEBYTECODE="1"
 
 function singularity_exec () {
     $debug "Singularity invocation: " "$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
