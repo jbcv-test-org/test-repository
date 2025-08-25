@@ -8,7 +8,7 @@
 ### outside_files_to_copy
 
 ### Optional config for custom deploy script
-export VERSION_TO_MODIFY=dev-2
+export VERSION_TO_MODIFY=dev-test-activate
 export STABLE_VERSION=1.1.6
 
 ### Version settings
