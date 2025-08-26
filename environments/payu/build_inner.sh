@@ -1,16 +1,10 @@
-### Custom install inner to build jupyter lab extensions
+### Custom install inner
 
-# set +u
-# eval "$( ${MAMBA} shell hook --shell bash)"
-# micromamba activate "${CONDA_INSTALLATION_PATH}/envs/${FULLENV}"
-# set -u
-
-# jupyter lab build
-
-# Patch payu shebang header with outer python executable that launches a container when run.
-# This means when payu submits qsub commands (e.g. payu run), it uses this python executable and launches a container on PBS job
-sed -i "1s|^#!/.*$|#!${CONDA_SCRIPT_PATH}/${FULLENV}.d/bin/python|" "${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/bin/payu"
-# Above command follows pattern of "sed -i '1s|pattern|replacement|' filename"
-# which modifies the environment's payu executable in place (-i),
-# and replaces the first line (1s), if it starts with #! (regex ^#!/.*$),
-# with the payu launcher script
+# Fix shebang headers in payu entry points (issue with pip installed packages: https://github.com/ACCESS-NRI/MED-condaenv/issues/78)
+for file in ${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/bin/payu; do
+    # Using payu-* to modify payu-run, payu-collate, payu-sync files
+    echo "Adding python header to $file"
+    # Substitute the first line of file (e.g. 1s), if it starts with #! (regex ^#!/.*$),
+    # with the python executable in the conda environment
+    sed -i "1s|^#!/.*$|#!${CONDA_INSTALLATION_PATH}/envs/${FULLENV}/bin/python|" "$file"
+done

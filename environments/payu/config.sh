@@ -8,7 +8,7 @@
 ### outside_files_to_copy
 
 ### Optional config for custom deploy script
-export VERSION_TO_MODIFY=1.1.6
+export VERSION_TO_MODIFY=dev-test-activate2
 export STABLE_VERSION=1.1.6
 
 ### Version settings
@@ -27,3 +27,14 @@ declare -a replace_from_apps=()
 declare -a outside_commands_to_include=( "pbs_tmrsh" )
 declare -a outside_files_to_copy=()
 declare -a replace_with_external=()
+
+declare -a launcher_commands=(
+    "payu-run"
+    "payu-collate"
+    "payu-sync"
+    "payu"
+    "payu-branch"
+    "payu-checkout"
+    "payu-clone"
+    "payu-profile"
+)

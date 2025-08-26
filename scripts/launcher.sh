@@ -29,6 +29,20 @@ $debug "conf_file = " "${conf_file}"
 
 source "${conf_file}"
 
+# Set up the environment launcher script path - useful for scripts, such as payu,
+# to know how launch the container directly
+export ENV_LAUNCHER_SCRIPT_PATH="${wrapper_bin%/}"/launcher.sh
+$debug "ENV_LAUNCHER_SCRIPT_PATH = " "${ENV_LAUNCHER_SCRIPT_PATH}"
+
+# Check if conda environment already activated
+myenv=$( basename "${wrapper_bin%/*}" ".d" )
+myenv="${myenv%-lite}"
+if [[ "${CONDA_DEFAULT_ENV}" != "/opt/conda/${myenv}" ]]; then
+    activate_script="${wrapper_bin}"/launcher_activate.sh
+    $debug "activate_script = " "${activate_script}"
+    source "${activate_script}"
+fi
+
 ### Add some complicated arguments that are never meant to be used by humans
 declare -a PROG_ARGS=()
 while [[ $# -gt 0 ]]; do
@@ -97,7 +111,6 @@ $debug "cmd_to_run = " "${cmd_to_run[@]}"
 ### Reminder: The --overlay argument that appears LAST takes priority, so put the
 ### default container first, that way if we're intentionally trying to use it from
 ### somewhere else (e.g. jobfs), the one on gdata will be mounted but not used.
-myenv=$( basename "${wrapper_bin%/*}" ".d" )
 if ! [[ "${CONTAINER_OVERLAY_PATH_OVERRIDE}" ]]; then
     if ! [[ :"${CONTAINER_OVERLAY_PATH}": =~ :"${CONDA_BASE_ENV_PATH}"/envs/"${myenv}".sqsh: ]]; then
         [[ -r "${CONDA_BASE_ENV_PATH}"/envs/"${myenv}".sqsh ]] && export CONTAINER_OVERLAY_PATH="${CONDA_BASE_ENV_PATH}"/envs/"${myenv}".sqsh:${CONTAINER_OVERLAY_PATH}
@@ -140,6 +153,7 @@ while IFS= read -r -d: i; do
     in_array "${singularity_default_path[@]}" "${i}" && continue
     [[ "${i}" == "/opt/singularity/bin" ]] && continue
     [[ "${i}" == "${wrapper_bin}" ]] && continue
+    [[ ":${SINGULARITYENV_PREPEND_PATH}:" == *":${i}:"* ]] && continue
     SINGULARITYENV_PREPEND_PATH="${SINGULARITYENV_PREPEND_PATH}:${i}"
 done<<<"${PATH%:}:"
 export SINGULARITYENV_PREPEND_PATH=${SINGULARITYENV_PREPEND_PATH#:*}
@@ -161,5 +175,44 @@ bind_str=${bind_str%,}
 
 $debug "binding args= " ${bind_str}
 
-$debug "Singularity invocation: " "$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
-"$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
+# Disable using local python libraries inside the container
+export SINGULARITYENV_PYTHONNOUSERSITE="x"
+
+# Disable Python's bytecode cache inside the container
+export SINGULARITYENV_PYTHONDONTWRITEBYTECODE="1"
+
+function singularity_exec () {
+    $debug "Singularity invocation: " "$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
+    "$SINGULARITY_BINARY_PATH" -s exec --bind "${bind_str}" ${overlay_args} "${CONTAINER_PATH}" "${cmd_to_run[@]}"
+}
+
+# Retry singularity exec command once
+MAX_TRY=2
+for TRY in $(seq 1 $MAX_TRY); do
+    # Run the singularity exec command. Capture stderr for error handling
+    { error_msg=$(singularity_exec 2>&1 1>&$out); exit_code=$?; } {out}>&1
+    # Close additional file descriptor
+    {out}>&-
+
+    # Write to stderr
+    echo "${error_msg}" 1>&2
+
+    if [[ $exit_code == 0 ]]; then
+        # Successful execution
+        break
+    elif [[ $exit_code == 255 ]] && [[ $error_msg =~ "container creation failed" ]]; then
+        # Transient container failure with error code 255: Retry
+        echo "Singularity invocation attempt ${TRY} failed."
+
+        if [[ $TRY < $MAX_TRY ]]; then
+            echo "Re-trying singularity invocation."
+        else
+            echo "Maximum number of ${MAX_TRY} singularity invocation attempts reached. Exiting."
+            exit $exit_code
+        fi
+
+    else
+        # Other error: Exit normally
+        exit $exit_code
+    fi
+done
