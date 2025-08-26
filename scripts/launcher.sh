@@ -29,6 +29,11 @@ $debug "conf_file = " "${conf_file}"
 
 source "${conf_file}"
 
+# Set up the environment launcher script path - useful for scripts, such as payu,
+# to know how launch the container directly
+export ENV_LAUNCHER_SCRIPT_PATH="${wrapper_bin%/}"/launcher.sh
+$debug "ENV_LAUNCHER_SCRIPT_PATH = " "${ENV_LAUNCHER_SCRIPT_PATH}"
+
 # Check if conda environment already activated
 myenv=$( basename "${wrapper_bin%/*}" ".d" )
 myenv="${myenv%-lite}"
